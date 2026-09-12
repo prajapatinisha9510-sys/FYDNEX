@@ -24,30 +24,20 @@ export default function BrandSignup() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { name },
+      },
     });
 
+    setLoading(false);
+
     if (signUpError) {
-      setLoading(false);
       setError(signUpError.message);
       return;
     }
 
     if (!data.user) {
-      setLoading(false);
       setError("Signup failed. Please try again.");
-      return;
-    }
-
-    const { error: profileError } = await supabase.from("brands").insert({
-      id: data.user.id,
-      name,
-      email,
-    });
-
-    setLoading(false);
-
-    if (profileError) {
-      setError(profileError.message);
       return;
     }
 
