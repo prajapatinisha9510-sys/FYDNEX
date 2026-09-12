@@ -22,13 +22,35 @@ export default function BrandDashboard() {
         return;
       }
 
-      const { data: brand } = await supabase
+      const { data: existing } = await supabase
         .from("brands")
         .select("name")
         .eq("id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        setName(existing.name);
+        setLoading(false);
+        return;
+      }
+
+      // No profile row yet — create it now from the metadata saved at signup
+      const meta = user.user_metadata || {};
+      const { data: created, error: createError } = await supabase
+        .from("brands")
+        .insert({
+          id: user.id,
+          name: meta.name ?? "",
+          email: user.email,
+        })
+        .select("name")
         .single();
 
-      setName(brand?.name ?? null);
+      if (createError) {
+        console.error(createError);
+      }
+
+      setName(created?.name ?? null);
       setLoading(false);
     }
     loadBrand();
