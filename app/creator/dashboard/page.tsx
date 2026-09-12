@@ -28,13 +28,38 @@ export default function CreatorDashboard() {
         return;
       }
 
-      const { data } = await supabase
+      const { data: existing } = await supabase
         .from("creators")
         .select("name, niche, platform, follower_count")
         .eq("id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        setProfile(existing);
+        setLoading(false);
+        return;
+      }
+
+      // No profile row yet — create it now from the metadata saved at signup
+      const meta = user.user_metadata || {};
+      const { data: created, error: createError } = await supabase
+        .from("creators")
+        .insert({
+          id: user.id,
+          name: meta.name ?? "",
+          email: user.email,
+          niche: meta.niche ?? "",
+          platform: meta.platform ?? "instagram",
+          follower_count: meta.follower_count ?? 0,
+        })
+        .select("name, niche, platform, follower_count")
         .single();
 
-      setProfile(data);
+      if (createError) {
+        console.error(createError);
+      }
+
+      setProfile(created ?? null);
       setLoading(false);
     }
     loadCreator();
