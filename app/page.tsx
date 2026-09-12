@@ -1,40 +1,53 @@
 import Link from "next/link";
 
+const funnelWords = [
+  "Awareness",
+  "Consideration",
+  "Ad creative",
+  "Conversion",
+  "Always-on",
+];
+
 const models = [
   {
     stage: "Awareness",
+    n: "01",
     name: "CPV Campaign",
     detail:
       "Brands pay per verified view. Any eligible creator joins instantly — an open pool, not a hand-picked few.",
-    color: "bg-amber",
+    accent: "#E8A63D",
   },
   {
     stage: "Consideration",
+    n: "02",
     name: "Participation Campaign",
     detail:
       "A fixed payout per post, gated by eligibility, verified against the brief before payment clears.",
-    color: "bg-teal",
+    accent: "#1F8A79",
   },
   {
     stage: "Ad creative",
+    n: "03",
     name: "One-Time Campaign",
     detail:
       "Creators deliver content brands own outright — for their own ads, not a public post.",
-    color: "bg-[#8B5E8A]",
+    accent: "#8B5E8A",
   },
   {
     stage: "Conversion",
+    n: "04",
     name: "Sales Campaign",
     detail:
       "One shared link. A guaranteed floor per creator, plus a bonus pool that scales with real, tracked sales.",
-    color: "bg-[#2E6F9E]",
+    accent: "#2E6F9E",
   },
   {
     stage: "Always-on",
+    n: "05",
     name: "Gig Marketplace",
     detail:
       "Verified creators list fixed-price services. Brands order on demand, no campaign required.",
-    color: "bg-[#B8632F]",
+    accent: "#B8632F",
   },
 ];
 
@@ -57,25 +70,72 @@ const steps = [
   {
     n: "04",
     title: "Payout releases",
-    detail: "Triggered by an API, a verification check, or approval — never a chase.",
+    detail:
+      "Triggered by an API, a verification check, or approval — never a chase.",
   },
 ];
 
 export default function Home() {
   return (
     <main>
+      {/* NAV */}
+      <header className="sticky top-0 z-50 bg-ink/90 backdrop-blur border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <span className="font-display text-xl text-white tracking-tight">
+            Fydnex
+          </span>
+          <nav className="hidden md:flex items-center gap-8 text-sm text-white/70">
+            <a href="#how-it-works" className="hover:text-white transition">
+              How it works
+            </a>
+            <a href="#models" className="hover:text-white transition">
+              Campaign types
+            </a>
+            <Link
+              href="/creator/signup"
+              className="hover:text-white transition"
+            >
+              For creators
+            </Link>
+          </nav>
+          <Link
+            href="/brand/signup"
+            className="bg-amber text-ink text-sm font-medium px-4 py-2 rounded-full hover:brightness-95 transition"
+          >
+            Start a campaign
+          </Link>
+        </div>
+      </header>
+
       {/* HERO */}
-      <section className="bg-ink text-white">
-        <div className="max-w-6xl mx-auto px-6 pt-28 pb-24 grid md:grid-cols-5 gap-12 items-center">
+      <section className="relative bg-ink text-white overflow-hidden">
+        {/* background depth */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-amber/20 blur-3xl" />
+          <div className="absolute top-10 right-0 w-[26rem] h-[26rem] rounded-full bg-teal/20 blur-3xl" />
+          <div
+            className="absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+              backgroundSize: "28px 28px",
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto px-6 pt-24 pb-20 grid md:grid-cols-5 gap-12 items-center">
           <div className="md:col-span-3">
-            <h1 className="font-display text-5xl md:text-6xl leading-[1.08] mb-6">
+            <span className="inline-block text-sm text-amber font-medium mb-6 bg-amber/10 px-3 py-1 rounded-full">
+              A full-funnel campaign marketplace
+            </span>
+            <h1 className="font-display text-5xl md:text-[3.6rem] leading-[1.06] mb-6">
               Campaigns, not
               <br />
               cold outreach.
             </h1>
             <p className="text-white/70 text-lg max-w-lg mb-10 leading-relaxed">
               Fydnex is where brands fund structured campaigns and creators
-              join under fixed rules. Every rupee sits in escrow until the
+              join under fixed rules. Every dollar sits in escrow until the
               work is verified — no browsing profiles, no DMs, no chasing
               payment.
             </p>
@@ -97,7 +157,7 @@ export default function Home() {
 
           {/* Ticket mock */}
           <div className="md:col-span-2">
-            <div className="relative bg-white text-ink rounded-2xl p-6 shadow-2xl">
+            <div className="relative bg-white text-ink rounded-2xl p-6 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] rotate-[1.5deg]">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-medium text-muted uppercase tracking-wide">
                   CPV Campaign
@@ -106,9 +166,9 @@ export default function Home() {
                   Live
                 </span>
               </div>
-              <p className="font-display text-2xl mb-1">QuickBite Launch</p>
+              <p className="font-display text-2xl mb-1">Launch Campaign</p>
               <p className="text-muted text-sm mb-6">
-                5 cities &middot; Food &amp; lifestyle creators
+                Multi-market &middot; Food &amp; lifestyle creators
               </p>
 
               <div
@@ -121,23 +181,41 @@ export default function Home() {
 
               <div className="grid grid-cols-2 gap-4 mt-2">
                 <div>
-                  <p className="text-2xl font-display">&#8377;2,00,000</p>
+                  <p className="text-2xl font-display">$25,000</p>
                   <p className="text-xs text-muted">Escrowed budget</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-display">&#8377;0.15</p>
+                  <p className="text-2xl font-display">$0.02</p>
                   <p className="text-xs text-muted">Per verified view</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* marquee strip — one deliberate motion moment */}
+        <div className="relative border-t border-white/10 bg-inksoft/60 py-4 overflow-hidden">
+          <div className="flex whitespace-nowrap animate-marquee">
+            {[...funnelWords, ...funnelWords, ...funnelWords, ...funnelWords].map(
+              (w, i) => (
+                <span
+                  key={i}
+                  className="mx-6 text-sm text-white/50 flex items-center gap-6"
+                >
+                  {w}
+                  <span className="text-amber/60">&bull;</span>
+                </span>
+              )
+            )}
+          </div>
+        </div>
       </section>
 
       {/* PROBLEM */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
+      <section className="max-w-6xl mx-auto px-6 py-28">
         <div className="grid md:grid-cols-2 gap-16">
           <div>
+            <p className="font-display text-6xl text-amber mb-4">01</p>
             <h2 className="font-display text-3xl mb-4">
               Brands pay upfront and hope.
             </h2>
@@ -148,6 +226,7 @@ export default function Home() {
             </p>
           </div>
           <div className="md:border-l md:border-ink/10 md:pl-16">
+            <p className="font-display text-6xl text-teal mb-4">02</p>
             <h2 className="font-display text-3xl mb-4">
               Creators wait and hope.
             </h2>
@@ -161,32 +240,33 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="bg-white border-y border-ink/10">
-        <div className="max-w-6xl mx-auto px-6 py-24">
+      <section
+        id="how-it-works"
+        className="bg-white border-y border-ink/10"
+      >
+        <div className="max-w-6xl mx-auto px-6 py-28">
           <h2 className="font-display text-3xl mb-14 max-w-lg">
             One structure, every campaign.
           </h2>
-          <div className="grid md:grid-cols-4 gap-10">
-            {steps.map((s, i) => (
+          <div className="relative grid md:grid-cols-4 gap-10">
+            <div className="hidden md:block absolute top-6 left-0 right-0 h-px bg-ink/10" />
+            {steps.map((s) => (
               <div key={s.n} className="relative">
-                <p className="font-display text-4xl text-amber mb-4">
+                <div className="w-12 h-12 rounded-full bg-ink text-white flex items-center justify-center font-display text-lg mb-6 relative z-10">
                   {s.n}
-                </p>
+                </div>
                 <h3 className="font-medium text-lg mb-2">{s.title}</h3>
                 <p className="text-muted text-sm leading-relaxed">
                   {s.detail}
                 </p>
-                {i < steps.length - 1 && (
-                  <span className="hidden md:block absolute top-5 -right-5 w-10 h-px bg-ink/15" />
-                )}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FIVE MODELS */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
+      {/* FIVE MODELS — die-cut ticket cards */}
+      <section id="models" className="max-w-6xl mx-auto px-6 py-28">
         <h2 className="font-display text-3xl mb-3 max-w-lg">
           Five campaign types. One funnel.
         </h2>
@@ -195,46 +275,65 @@ export default function Home() {
           awareness, trust, conversion, and everything in between.
         </p>
 
-        <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-5">
           {models.map((m) => (
             <div
               key={m.name}
-              className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8 border border-ink/10 rounded-xl px-6 py-5 bg-white"
+              className="relative bg-white rounded-2xl overflow-hidden border border-ink/10"
             >
-              <div className="flex items-center gap-3 md:w-48 shrink-0">
-                <span className={`w-2.5 h-2.5 rounded-full ${m.color}`} />
-                <span className="text-sm text-muted">{m.stage}</span>
+              <div
+                className="h-1.5"
+                style={{ backgroundColor: m.accent }}
+              />
+              <div className="p-7">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs font-medium text-muted">
+                    {m.stage}
+                  </span>
+                  <span
+                    className="font-display text-2xl"
+                    style={{ color: m.accent }}
+                  >
+                    {m.n}
+                  </span>
+                </div>
+                <p className="font-display text-xl mb-2">{m.name}</p>
+                <p className="text-muted text-sm leading-relaxed">
+                  {m.detail}
+                </p>
               </div>
-              <p className="font-display text-xl md:w-64 shrink-0">
-                {m.name}
-              </p>
-              <p className="text-muted text-sm leading-relaxed">
-                {m.detail}
-              </p>
             </div>
           ))}
         </div>
       </section>
 
       {/* TRUST BAND */}
-      <section className="bg-ink text-white">
-        <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
+      <section className="relative bg-ink text-white overflow-hidden">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div className="relative max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-3 gap-10">
           <div>
-            <p className="font-display text-4xl mb-2 text-amber">100%</p>
+            <p className="font-display text-5xl mb-2 text-amber">100%</p>
             <p className="text-white/60 text-sm leading-relaxed">
               Of campaign budgets held in escrow before a creator ever
               starts work.
             </p>
           </div>
           <div>
-            <p className="font-display text-4xl mb-2 text-amber">0</p>
+            <p className="font-display text-5xl mb-2 text-amber">0</p>
             <p className="text-white/60 text-sm leading-relaxed">
               Manual matchmaking. No browsing profiles, no cold pitching,
               ever.
             </p>
           </div>
           <div>
-            <p className="font-display text-4xl mb-2 text-amber">5</p>
+            <p className="font-display text-5xl mb-2 text-amber">5</p>
             <p className="text-white/60 text-sm leading-relaxed">
               Campaign models spanning the full funnel, from first view to
               final sale.
@@ -244,7 +343,7 @@ export default function Home() {
       </section>
 
       {/* CLOSING CTA */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
+      <section className="max-w-6xl mx-auto px-6 py-28">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-white border border-ink/10 rounded-2xl p-10">
             <h3 className="font-display text-2xl mb-3">For brands</h3>
@@ -259,26 +358,77 @@ export default function Home() {
               Create a brand account
             </Link>
           </div>
-          <div className="bg-ink text-white rounded-2xl p-10">
-            <h3 className="font-display text-2xl mb-3">For creators</h3>
-            <p className="text-white/70 mb-8 leading-relaxed">
-              Join campaigns that already match your niche. Get paid on
-              merit, protected by escrow, without chasing anyone.
-            </p>
-            <Link
-              href="/creator/signup"
-              className="inline-block bg-amber text-ink px-5 py-2.5 rounded-full font-medium hover:brightness-95 transition"
-            >
-              Join as a creator
-            </Link>
+          <div className="relative bg-ink text-white rounded-2xl p-10 overflow-hidden">
+            <div className="pointer-events-none absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-amber/20 blur-3xl" />
+            <div className="relative">
+              <h3 className="font-display text-2xl mb-3">For creators</h3>
+              <p className="text-white/70 mb-8 leading-relaxed">
+                Join campaigns that already match your niche. Get paid on
+                merit, protected by escrow, without chasing anyone.
+              </p>
+              <Link
+                href="/creator/signup"
+                className="inline-block bg-amber text-ink px-5 py-2.5 rounded-full font-medium hover:brightness-95 transition"
+              >
+                Join as a creator
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-ink/10">
-        <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted">
-          <p>Fydnex &mdash; a full-funnel campaign marketplace</p>
-          <p>India-first, built for real campaigns</p>
+      {/* FOOTER */}
+      <footer className="border-t border-ink/10 bg-white">
+        <div className="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-10">
+          <div>
+            <span className="font-display text-xl">Fydnex</span>
+            <p className="text-muted text-sm mt-3 leading-relaxed">
+              A full-funnel campaign marketplace for brands and creators.
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-3">Product</p>
+            <ul className="space-y-2 text-sm text-muted">
+              <li>
+                <a href="#how-it-works" className="hover:text-ink transition">
+                  How it works
+                </a>
+              </li>
+              <li>
+                <a href="#models" className="hover:text-ink transition">
+                  Campaign types
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-3">For brands</p>
+            <ul className="space-y-2 text-sm text-muted">
+              <li>
+                <Link href="/brand/signup" className="hover:text-ink transition">
+                  Start a campaign
+                </Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm font-medium mb-3">For creators</p>
+            <ul className="space-y-2 text-sm text-muted">
+              <li>
+                <Link
+                  href="/creator/signup"
+                  className="hover:text-ink transition"
+                >
+                  Join as a creator
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="border-t border-ink/10">
+          <div className="max-w-6xl mx-auto px-6 py-6 text-sm text-muted">
+            Fydnex &mdash; built for real campaigns, everywhere.
+          </div>
         </div>
       </footer>
     </main>
