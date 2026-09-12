@@ -40,8 +40,16 @@ export default function CreatorDashboard() {
         return;
       }
 
-      // No profile row yet — create it now from the metadata saved at signup
+      // No profile row yet
       const meta = user.user_metadata || {};
+
+      if (!meta.niche) {
+        // Signed up via Google — never filled the niche/platform form
+        router.push("/creator/complete-profile");
+        return;
+      }
+
+      // Signed up via email — create the row now from signup metadata
       const { data: created, error: createError } = await supabase
         .from("creators")
         .insert({
