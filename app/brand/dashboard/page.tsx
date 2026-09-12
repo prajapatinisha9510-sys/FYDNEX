@@ -34,13 +34,14 @@ export default function BrandDashboard() {
         return;
       }
 
-      // No profile row yet — create it now from the metadata saved at signup
+      // No profile row yet — create it now (from signup metadata, or Google profile)
       const meta = user.user_metadata || {};
+      const fallbackName = meta.name ?? meta.full_name ?? "";
       const { data: created, error: createError } = await supabase
         .from("brands")
         .insert({
           id: user.id,
-          name: meta.name ?? "",
+          name: fallbackName,
           email: user.email,
         })
         .select("name")
