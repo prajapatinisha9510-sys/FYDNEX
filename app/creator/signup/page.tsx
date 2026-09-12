@@ -40,33 +40,25 @@ export default function CreatorSignup() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          name,
+          niche,
+          platform,
+          follower_count: Number(followerCount) || 0,
+        },
+      },
     });
 
+    setLoading(false);
+
     if (signUpError) {
-      setLoading(false);
       setError(signUpError.message);
       return;
     }
 
     if (!data.user) {
-      setLoading(false);
       setError("Signup failed. Please try again.");
-      return;
-    }
-
-    const { error: profileError } = await supabase.from("creators").insert({
-      id: data.user.id,
-      name,
-      email,
-      niche,
-      platform,
-      follower_count: Number(followerCount) || 0,
-    });
-
-    setLoading(false);
-
-    if (profileError) {
-      setError(profileError.message);
       return;
     }
 
