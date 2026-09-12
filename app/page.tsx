@@ -91,18 +91,27 @@ export default function Home() {
             <a href="#models" className="hover:text-white transition">
               Campaign types
             </a>
-            <Link
-              href="/creator/signup"
-              className="hover:text-white transition"
-            >
-              For creators
-            </Link>
-            <Link
-              href="/brand/login"
-              className="hover:text-white transition"
-            >
-              Log in
-            </Link>
+            <div className="relative group">
+              <span className="hover:text-white transition cursor-pointer">
+                Log in
+              </span>
+              <div className="absolute right-0 top-full pt-3 hidden group-hover:block">
+                <div className="bg-white rounded-lg shadow-xl py-2 w-40">
+                  <Link
+                    href="/brand/login"
+                    className="block px-4 py-2 text-sm text-ink hover:bg-paper transition"
+                  >
+                    Brand login
+                  </Link>
+                  <Link
+                    href="/creator/login"
+                    className="block px-4 py-2 text-sm text-ink hover:bg-paper transition"
+                  >
+                    Creator login
+                  </Link>
+                </div>
+              </div>
+            </div>
           </nav>
           <Link
             href="/brand/signup"
