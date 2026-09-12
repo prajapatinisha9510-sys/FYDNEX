@@ -97,6 +97,12 @@ export default function Home() {
             >
               For creators
             </Link>
+            <Link
+              href="/brand/login"
+              className="hover:text-white transition"
+            >
+              Log in
+            </Link>
           </nav>
           <Link
             href="/brand/signup"
@@ -357,6 +363,12 @@ export default function Home() {
             >
               Create a brand account
             </Link>
+            <Link
+              href="/brand/login"
+              className="block mt-4 text-sm text-muted hover:text-ink transition"
+            >
+              Already have an account? Log in
+            </Link>
           </div>
           <div className="relative bg-ink text-white rounded-2xl p-10 overflow-hidden">
             <div className="pointer-events-none absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-amber/20 blur-3xl" />
@@ -371,6 +383,12 @@ export default function Home() {
                 className="inline-block bg-amber text-ink px-5 py-2.5 rounded-full font-medium hover:brightness-95 transition"
               >
                 Join as a creator
+              </Link>
+              <Link
+                href="/creator/login"
+                className="block mt-4 text-sm text-white/60 hover:text-white transition"
+              >
+                Already have an account? Log in
               </Link>
             </div>
           </div>
