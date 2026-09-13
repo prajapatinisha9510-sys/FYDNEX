@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import GoogleButton from "@/components/GoogleButton";
 
-export default function BrandSignup() {
+export default function CreatorSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function BrandSignup() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/brand/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/creator/dashboard`,
       },
     });
   }
@@ -48,7 +48,7 @@ export default function BrandSignup() {
     }
 
     if (data.session) {
-      router.push("/brand/complete-profile");
+      router.push("/creator/complete-profile");
     } else {
       setCheckEmail(true);
     }
@@ -70,9 +70,9 @@ export default function BrandSignup() {
   return (
     <div className="min-h-screen flex items-center justify-center px-6 bg-paper">
       <div className="w-full max-w-md bg-white rounded-2xl shadow p-8">
-        <h1 className="font-display text-2xl mb-1">Create a brand account</h1>
+        <h1 className="font-display text-2xl mb-1">Join as a creator</h1>
         <p className="text-muted text-sm mb-6">
-          We&apos;ll get your campaign details after you sign up.
+          We&apos;ll get your niche and platform details right after.
         </p>
 
         <GoogleButton onClick={handleGoogle} />
@@ -120,7 +120,7 @@ export default function BrandSignup() {
         </form>
         <p className="text-sm text-muted mt-4 text-center">
           Already have an account?{" "}
-          <Link href="/brand/login" className="text-amber font-medium">
+          <Link href="/creator/login" className="text-amber font-medium">
             Log in
           </Link>
         </p>
