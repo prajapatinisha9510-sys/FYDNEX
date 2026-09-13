@@ -1,34 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
-const NICHES = [
-  "Food",
-  "Tech",
-  "Fitness",
-  "Fashion",
-  "Beauty",
-  "Lifestyle",
-  "Gaming",
-  "Finance",
-  "Travel",
-  "Comedy",
-];
+type CreatorProfile = {
+  name: string;
+  niche: string;
+  platform: string;
+  follower_count: number;
+};
 
-export default function CreatorCompleteProfile() {
-  const [name, setName] = useState("");
-  const [niche, setNiche] = useState("");
-  const [platform, setPlatform] = useState("instagram");
-  const [followerCount, setFollowerCount] = useState("");
-  const [checking, setChecking] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+export default function CreatorDashboard() {
+  const [profile, setProfile] = useState<CreatorProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    async function check() {
+    async function loadCreator() {
       const supabase = createClient();
       const {
         data: { user },
@@ -39,60 +28,30 @@ export default function CreatorCompleteProfile() {
         return;
       }
 
-      const { data: existing } = await supabase
+      const { data } = await supabase
         .from("creators")
-        .select("id")
+        .select("name, niche, platform, follower_count")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (existing) {
-        router.push("/creator/dashboard");
+      if (!data) {
+        router.push("/creator/complete-profile");
         return;
       }
 
-      const meta = user.user_metadata || {};
-      setName(meta.full_name || meta.name || "");
-      setChecking(false);
+      setProfile(data);
+      setLoading(false);
     }
-    check();
+    loadCreator();
   }, [router]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
+  async function handleLogout() {
     const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setLoading(false);
-      router.push("/creator/login");
-      return;
-    }
-
-    const { error: insertError } = await supabase.from("creators").insert({
-      id: user.id,
-      name,
-      email: user.email,
-      niche,
-      platform,
-      follower_count: Number(followerCount) || 0,
-    });
-
-    setLoading(false);
-
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-
-    router.push("/creator/dashboard");
+    await supabase.auth.signOut();
+    router.push("/creator/login");
   }
 
-  if (checking) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-paper">
         <p className="text-muted">Loading...</p>
@@ -101,93 +60,35 @@ export default function CreatorCompleteProfile() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-paper">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow p-8">
-        <h1 className="font-display text-2xl mb-1">Tell us about you</h1>
-        <p className="text-muted text-sm mb-6">
-          A couple of details so we can match you with the right campaigns.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">
-              Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">
-              Niche
-            </label>
-            <select
-              value={niche}
-              onChange={(e) => setNiche(e.target.value)}
-              className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber bg-white"
-              required
-            >
-              <option value="" disabled>
-                Select your primary niche
-              </option>
-              {NICHES.map((n) => (
-                <option key={n} value={n.toLowerCase()}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">
-              Primary platform
-            </label>
-            <div className="flex gap-3">
-              {["instagram", "youtube"].map((p) => (
-                <button
-                  type="button"
-                  key={p}
-                  onClick={() => setPlatform(p)}
-                  className={`flex-1 border rounded-lg px-3 py-2 text-sm font-medium capitalize transition ${
-                    platform === p
-                      ? "border-amber bg-amber/10 text-ink"
-                      : "border-ink/15 text-muted"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">
-              Follower count
-            </label>
-            <input
-              type="number"
-              min={0}
-              value={followerCount}
-              onChange={(e) => setFollowerCount(e.target.value)}
-              className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-              required
-            />
-          </div>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
+    <div className="min-h-screen bg-paper">
+      <header className="bg-white border-b border-ink/10">
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+          <span className="font-display text-lg">Fydnex</span>
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-ink text-white rounded-lg px-3 py-2.5 font-medium hover:bg-inksoft transition disabled:opacity-50"
+            onClick={handleLogout}
+            className="text-sm text-muted hover:text-ink transition"
           >
-            {loading ? "Saving..." : "Go to dashboard"}
+            Log out
           </button>
-        </form>
+        </div>
+      </header>
+
+      <div className="max-w-4xl mx-auto px-6 py-16">
+        <h1 className="font-display text-3xl mb-2">
+          Welcome, {profile?.name}
+        </h1>
+        <p className="text-muted mb-10 capitalize">
+          {profile?.niche} &middot; {profile?.platform} &middot;{" "}
+          {profile?.follower_count?.toLocaleString()} followers
+        </p>
+
+        <div className="bg-white border border-ink/10 rounded-2xl p-8">
+          <p className="font-display text-xl mb-2">No campaigns yet</p>
+          <p className="text-muted text-sm">
+            Eligible campaigns will appear here once brands start creating
+            them.
+          </p>
+        </div>
       </div>
     </div>
   );
