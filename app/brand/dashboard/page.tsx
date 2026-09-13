@@ -22,36 +22,18 @@ export default function BrandDashboard() {
         return;
       }
 
-      const { data: existing } = await supabase
+      const { data } = await supabase
         .from("brands")
         .select("name")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (existing) {
-        setName(existing.name);
-        setLoading(false);
+      if (!data) {
+        router.push("/brand/complete-profile");
         return;
       }
 
-      // No profile row yet — create it now (from signup metadata, or Google profile)
-      const meta = user.user_metadata || {};
-      const fallbackName = meta.name ?? meta.full_name ?? "";
-      const { data: created, error: createError } = await supabase
-        .from("brands")
-        .insert({
-          id: user.id,
-          name: fallbackName,
-          email: user.email,
-        })
-        .select("name")
-        .single();
-
-      if (createError) {
-        console.error(createError);
-      }
-
-      setName(created?.name ?? null);
+      setName(data.name);
       setLoading(false);
     }
     loadBrand();
@@ -87,9 +69,7 @@ export default function BrandDashboard() {
 
       <div className="max-w-4xl mx-auto px-6 py-16">
         <h1 className="font-display text-3xl mb-2">Welcome, {name}</h1>
-        <p className="text-muted mb-10">
-          Manage your campaigns from here.
-        </p>
+        <p className="text-muted mb-10">Manage your campaigns from here.</p>
 
         <Link
           href="/brand/campaign/new"
