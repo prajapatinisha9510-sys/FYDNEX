@@ -17,17 +17,18 @@ const NICHES = [
   "Comedy",
 ];
 
-export default function CompleteProfile() {
+export default function CreatorCompleteProfile() {
   const [name, setName] = useState("");
   const [niche, setNiche] = useState("");
   const [platform, setPlatform] = useState("instagram");
   const [followerCount, setFollowerCount] = useState("");
+  const [checking, setChecking] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    async function prefill() {
+    async function check() {
       const supabase = createClient();
       const {
         data: { user },
@@ -38,7 +39,6 @@ export default function CompleteProfile() {
         return;
       }
 
-      // Already has a profile? skip straight to dashboard
       const { data: existing } = await supabase
         .from("creators")
         .select("id")
@@ -52,8 +52,9 @@ export default function CompleteProfile() {
 
       const meta = user.user_metadata || {};
       setName(meta.full_name || meta.name || "");
+      setChecking(false);
     }
-    prefill();
+    check();
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -91,12 +92,20 @@ export default function CompleteProfile() {
     router.push("/creator/dashboard");
   }
 
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-paper">
+        <p className="text-muted">Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-paper">
       <div className="w-full max-w-md bg-white rounded-2xl shadow p-8">
-        <h1 className="font-display text-2xl mb-1">One more step</h1>
+        <h1 className="font-display text-2xl mb-1">Tell us about you</h1>
         <p className="text-muted text-sm mb-6">
-          A couple of details we need to match you with the right campaigns.
+          A couple of details so we can match you with the right campaigns.
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -176,7 +185,7 @@ export default function CompleteProfile() {
             disabled={loading}
             className="w-full bg-ink text-white rounded-lg px-3 py-2.5 font-medium hover:bg-inksoft transition disabled:opacity-50"
           >
-            {loading ? "Saving..." : "Finish setting up"}
+            {loading ? "Saving..." : "Go to dashboard"}
           </button>
         </form>
       </div>
