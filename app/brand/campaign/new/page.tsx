@@ -1,297 +1,161 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const NICHES = [
-  "Food",
-  "Tech",
-  "Fitness",
-  "Fashion",
-  "Beauty",
-  "Lifestyle",
-  "Gaming",
-  "Finance",
-  "Travel",
-  "Comedy",
+const MODELS = [
+  {
+    stage: "Awareness",
+    name: "CPV Campaign",
+    detail:
+      "Pay per verified view. Any eligible creator joins instantly — an open pool, not a hand-picked few.",
+    accent: "#E8A63D",
+    href: "/brand/campaign/new/cpv",
+    live: true,
+  },
+  {
+    stage: "Consideration",
+    name: "Participation Campaign",
+    detail:
+      "A fixed payout per post, gated by eligibility, verified against the brief before payment clears.",
+    accent: "#1F8A79",
+    href: "#",
+    live: false,
+  },
+  {
+    stage: "Ad creative",
+    name: "One-Time Campaign",
+    detail:
+      "Creators deliver content brands own outright — for their own ads, not a public post.",
+    accent: "#8B5E8A",
+    href: "#",
+    live: false,
+  },
+  {
+    stage: "Conversion",
+    name: "Sales Campaign",
+    detail:
+      "One shared link. A guaranteed floor per creator, plus a bonus pool that scales with real, tracked sales.",
+    accent: "#2E6F9E",
+    href: "#",
+    live: false,
+  },
+  {
+    stage: "Always-on",
+    name: "Gig Marketplace",
+    detail:
+      "Verified creators list fixed-price services. Brands order on demand, no campaign required.",
+    accent: "#B8632F",
+    href: "#",
+    live: false,
+  },
 ];
 
-export default function NewCampaign() {
-  const [brandId, setBrandId] = useState<string | null>(null);
-  const [title, setTitle] = useState("");
-  const [brief, setBrief] = useState("");
-  const [ratePerView, setRatePerView] = useState("");
-  const [totalBudget, setTotalBudget] = useState("");
-  const [milestoneSize, setMilestoneSize] = useState("5000");
-  const [durationDays, setDurationDays] = useState("3");
-  const [niche, setNiche] = useState("");
-  const [minFollowers, setMinFollowers] = useState("0");
-  const [platform, setPlatform] = useState("instagram");
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+export default function SelectCampaignType() {
+  const [checking, setChecking] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const id = localStorage.getItem("brand_id");
-    setBrandId(id);
-  }, []);
+    async function checkAuth() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-
-    if (!brandId) {
-      setError(
-        "No brand account found on this browser. Sign up as a brand first."
-      );
-      return;
+      if (!user) {
+        router.push("/brand/login");
+        return;
+      }
+      setChecking(false);
     }
+    checkAuth();
+  }, [router]);
 
-    setLoading(true);
-
-    const supabase = createClient();
-    const budget = Number(totalBudget);
-    const now = new Date();
-    const end = new Date(now.getTime() + Number(durationDays) * 86400000);
-
-    const { error } = await supabase.from("campaigns").insert({
-      brand_id: brandId,
-      title,
-      brief,
-      rate_per_view: Number(ratePerView),
-      total_budget: budget,
-      budget_remaining: budget,
-      milestone_size: Number(milestoneSize),
-      eligibility: {
-        niche,
-        min_followers: Number(minFollowers),
-        platform,
-      },
-      status: "live",
-      start_at: now.toISOString(),
-      end_at: end.toISOString(),
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    setSuccess(true);
-  }
-
-  if (!brandId) {
+  if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 bg-paper">
-        <div className="bg-white rounded-2xl shadow p-8 max-w-md text-center">
-          <h1 className="font-display text-2xl mb-2">No brand account found</h1>
-          <p className="text-muted mb-6">
-            This browser doesn&apos;t have a saved brand account. Create one
-            first.
-          </p>
-          <Link
-            href="/brand/signup"
-            className="inline-block bg-ink text-white px-5 py-2.5 rounded-full font-medium hover:bg-inksoft transition"
-          >
-            Create a brand account
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6 bg-paper">
-        <div className="bg-white rounded-2xl shadow p-8 max-w-md text-center">
-          <h1 className="font-display text-2xl mb-2 text-teal">
-            Campaign live
-          </h1>
-          <p className="text-muted">
-            Check your Supabase <code className="bg-paper px-1 rounded">campaigns</code> table
-            to confirm the row appeared, with{" "}
-            <code className="bg-paper px-1 rounded">budget_remaining</code>{" "}
-            equal to your total budget.
-          </p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-paper">
+        <p className="text-muted">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-16 bg-paper">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow p-8">
-        <h1 className="font-display text-2xl mb-1">Create a CPV campaign</h1>
-        <p className="text-muted text-sm mb-6">
-          Set your budget and rate. Funds are tracked in your{" "}
-          <code className="bg-paper px-1 rounded">escrow_ledger</code> once
-          real payments are wired in.
+    <div className="min-h-screen bg-paper">
+      <header className="bg-white border-b border-ink/10">
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+          <span className="font-display text-lg">Fydnex</span>
+          <Link
+            href="/brand/dashboard"
+            className="text-sm text-muted hover:text-ink transition"
+          >
+            Back to dashboard
+          </Link>
+        </div>
+      </header>
+
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <h1 className="font-display text-3xl mb-2">
+          What kind of campaign do you need?
+        </h1>
+        <p className="text-muted mb-10">
+          Pick the model that fits your goal. Each one has different rules
+          for how creators join and get paid.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">
-              Campaign title
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. StrikeZone Launch"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-ink mb-1">
-              Content brief
-            </label>
-            <textarea
-              placeholder="What should creators show or do in their content?"
-              value={brief}
-              onChange={(e) => setBrief(e.target.value)}
-              className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-              rows={3}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-ink mb-1">
-                Rate per view ($)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.02"
-                value={ratePerView}
-                onChange={(e) => setRatePerView(e.target.value)}
-                className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-ink mb-1">
-                Total budget ($)
-              </label>
-              <input
-                type="number"
-                step="1"
-                min="0"
-                placeholder="25000"
-                value={totalBudget}
-                onChange={(e) => setTotalBudget(e.target.value)}
-                className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-ink mb-1">
-                Milestone size (views)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={milestoneSize}
-                onChange={(e) => setMilestoneSize(e.target.value)}
-                className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-ink mb-1">
-                Duration (days)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={durationDays}
-                onChange={(e) => setDurationDays(e.target.value)}
-                className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-ink/10 pt-4">
-            <p className="text-sm font-medium text-ink mb-3">
-              Creator eligibility
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-muted mb-1">
-                  Required niche
-                </label>
-                <select
-                  value={niche}
-                  onChange={(e) => setNiche(e.target.value)}
-                  className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber bg-white"
-                  required
-                >
-                  <option value="" disabled>
-                    Select a niche
-                  </option>
-                  {NICHES.map((n) => (
-                    <option key={n} value={n.toLowerCase()}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-muted mb-1">
-                    Min. followers
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={minFollowers}
-                    onChange={(e) => setMinFollowers(e.target.value)}
-                    className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-muted mb-1">
-                    Platform
-                  </label>
-                  <select
-                    value={platform}
-                    onChange={(e) => setPlatform(e.target.value)}
-                    className="w-full border border-ink/15 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber bg-white"
-                  >
-                    <option value="instagram">Instagram</option>
-                    <option value="youtube">YouTube</option>
-                  </select>
+        <div className="space-y-4">
+          {MODELS.map((m) => {
+            const card = (
+              <div
+                className={`relative bg-white rounded-2xl overflow-hidden border border-ink/10 transition ${
+                  m.live
+                    ? "hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
+                    : "opacity-60 cursor-not-allowed"
+                }`}
+              >
+                <div
+                  className="h-1.5"
+                  style={{ backgroundColor: m.accent }}
+                />
+                <div className="p-6 flex items-start justify-between gap-6">
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span className="text-xs font-medium text-muted">
+                        {m.stage}
+                      </span>
+                      {!m.live && (
+                        <span className="text-xs bg-ink/5 text-muted px-2 py-0.5 rounded-full">
+                          Coming soon
+                        </span>
+                      )}
+                    </div>
+                    <p className="font-display text-xl mb-2">{m.name}</p>
+                    <p className="text-muted text-sm leading-relaxed max-w-md">
+                      {m.detail}
+                    </p>
+                  </div>
+                  {m.live && (
+                    <span
+                      className="text-2xl font-display shrink-0"
+                      style={{ color: m.accent }}
+                    >
+                      &rarr;
+                    </span>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
+            );
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-ink text-white rounded-lg px-3 py-2.5 font-medium hover:bg-inksoft transition disabled:opacity-50"
-          >
-            {loading ? "Launching..." : "Launch campaign"}
-          </button>
-        </form>
+            return m.live ? (
+              <Link key={m.name} href={m.href}>
+                {card}
+              </Link>
+            ) : (
+              <div key={m.name}>{card}</div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
