@@ -8,33 +8,47 @@ import Link from "next/link";
 export default function BrandDashboard() {
   const [name, setName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     async function loadBrand() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-      if (!user) {
-        router.push("/brand/login");
-        return;
+        if (userError) throw userError;
+
+        if (!user) {
+          router.push("/brand/login");
+          return;
+        }
+
+        const { data, error: selectError } = await supabase
+          .from("brands")
+          .select("name")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (selectError) throw selectError;
+
+        if (!data) {
+          router.push("/brand/complete-profile");
+          return;
+        }
+
+        setName(data.name);
+        setLoading(false);
+      } catch (err: unknown) {
+        console.error(err);
+        setLoadError(
+          err instanceof Error ? err.message : "Something went wrong."
+        );
+        setLoading(false);
       }
-
-      const { data } = await supabase
-        .from("brands")
-        .select("name")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!data) {
-        router.push("/brand/complete-profile");
-        return;
-      }
-
-      setName(data.name);
-      setLoading(false);
     }
     loadBrand();
   }, [router]);
@@ -47,8 +61,17 @@ export default function BrandDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-paper">
-        <p className="text-muted">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-paper px-6">
+        {loadError ? (
+          <div className="bg-white rounded-2xl shadow p-8 max-w-md text-center">
+            <h1 className="font-display text-xl mb-2 text-red-600">
+              Something went wrong
+            </h1>
+            <p className="text-muted text-sm">{loadError}</p>
+          </div>
+        ) : (
+          <p className="text-muted">Loading...</p>
+        )}
       </div>
     );
   }
