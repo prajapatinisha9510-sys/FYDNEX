@@ -14,61 +14,47 @@ type CreatorProfile = {
 export default function CreatorDashboard() {
   const [profile, setProfile] = useState<CreatorProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
     async function loadCreator() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-      if (!user) {
-        router.push("/creator/login");
-        return;
-      }
+        if (userError) throw userError;
 
-      const { data: existing } = await supabase
-        .from("creators")
-        .select("name, niche, platform, follower_count")
-        .eq("id", user.id)
-        .maybeSingle();
+        if (!user) {
+          router.push("/creator/login");
+          return;
+        }
 
-      if (existing) {
-        setProfile(existing);
+        const { data, error: selectError } = await supabase
+          .from("creators")
+          .select("name, niche, platform, follower_count")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (selectError) throw selectError;
+
+        if (!data) {
+          router.push("/creator/complete-profile");
+          return;
+        }
+
+        setProfile(data);
         setLoading(false);
-        return;
+      } catch (err: unknown) {
+        console.error(err);
+        setLoadError(
+          err instanceof Error ? err.message : "Something went wrong."
+        );
+        setLoading(false);
       }
-
-      // No profile row yet
-      const meta = user.user_metadata || {};
-
-      if (!meta.niche) {
-        // Signed up via Google — never filled the niche/platform form
-        router.push("/creator/complete-profile");
-        return;
-      }
-
-      // Signed up via email — create the row now from signup metadata
-      const { data: created, error: createError } = await supabase
-        .from("creators")
-        .insert({
-          id: user.id,
-          name: meta.name ?? "",
-          email: user.email,
-          niche: meta.niche ?? "",
-          platform: meta.platform ?? "instagram",
-          follower_count: meta.follower_count ?? 0,
-        })
-        .select("name, niche, platform, follower_count")
-        .single();
-
-      if (createError) {
-        console.error(createError);
-      }
-
-      setProfile(created ?? null);
-      setLoading(false);
     }
     loadCreator();
   }, [router]);
@@ -81,8 +67,17 @@ export default function CreatorDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-paper">
-        <p className="text-muted">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-paper px-6">
+        {loadError ? (
+          <div className="bg-white rounded-2xl shadow p-8 max-w-md text-center">
+            <h1 className="font-display text-xl mb-2 text-red-600">
+              Something went wrong
+            </h1>
+            <p className="text-muted text-sm">{loadError}</p>
+          </div>
+        ) : (
+          <p className="text-muted">Loading...</p>
+        )}
       </div>
     );
   }
@@ -114,7 +109,7 @@ export default function CreatorDashboard() {
           <p className="font-display text-xl mb-2">No campaigns yet</p>
           <p className="text-muted text-sm">
             Eligible campaigns will appear here once brands start creating
-            them — this list is being built next.
+            them.
           </p>
         </div>
       </div>
