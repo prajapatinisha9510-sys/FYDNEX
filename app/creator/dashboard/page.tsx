@@ -9,6 +9,8 @@ type CreatorProfile = {
   niche: string;
   platform: string;
   follower_count: number;
+  youtube_connected: boolean;
+  instagram_connected: boolean;
 };
 
 type Campaign = {
@@ -52,7 +54,9 @@ export default function CreatorDashboard() {
 
         const { data: creatorData, error: selectError } = await supabase
           .from("creators")
-          .select("name, niche, platform, follower_count")
+          .select(
+            "name, niche, platform, follower_count, youtube_connected, instagram_connected"
+          )
           .eq("id", user.id)
           .maybeSingle();
 
@@ -132,6 +136,31 @@ export default function CreatorDashboard() {
     setJoinedIds((prev) => new Set(prev).add(campaignId));
   }
 
+  async function handleConnectYouTube() {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/creator/dashboard&connect=youtube`,
+        scopes: "https://www.googleapis.com/auth/youtube.readonly",
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
+      },
+    });
+  }
+
+  function handleConnectInstagram() {
+    const params = new URLSearchParams({
+      client_id: process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID!,
+      redirect_uri: `${window.location.origin}/api/instagram/callback`,
+      response_type: "code",
+      scope: "instagram_business_basic,instagram_business_manage_insights",
+    });
+    window.location.href = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+  }
+
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -173,10 +202,56 @@ export default function CreatorDashboard() {
         <h1 className="font-display text-3xl mb-2">
           Welcome, {profile?.name}
         </h1>
-        <p className="text-muted mb-10 capitalize">
+        <p className="text-muted mb-6 capitalize">
           {profile?.niche} &middot; {profile?.platform} &middot;{" "}
           {profile?.follower_count?.toLocaleString()} followers
         </p>
+
+        <div className="bg-white border border-ink/10 rounded-2xl p-6 mb-4 flex items-center justify-between">
+          <div>
+            <p className="font-medium mb-1">Instagram account</p>
+            <p className="text-muted text-sm">
+              {profile?.instagram_connected
+                ? "Connected — Fydnex can track verified views on your posts."
+                : "Connect your account so Fydnex can verify views for CPV campaigns."}
+            </p>
+          </div>
+          {profile?.instagram_connected ? (
+            <span className="shrink-0 text-sm bg-teal/10 text-teal px-4 py-2 rounded-full font-medium">
+              Connected
+            </span>
+          ) : (
+            <button
+              onClick={handleConnectInstagram}
+              className="shrink-0 bg-ink text-white px-5 py-2.5 rounded-full font-medium hover:bg-inksoft transition"
+            >
+              Connect Instagram
+            </button>
+          )}
+        </div>
+
+        <div className="bg-white border border-ink/10 rounded-2xl p-6 mb-10 flex items-center justify-between">
+          <div>
+            <p className="font-medium mb-1">YouTube account</p>
+            <p className="text-muted text-sm">
+              {profile?.youtube_connected
+                ? "Connected — Fydnex can track verified views on your videos."
+                : "Connect your account so Fydnex can verify views for CPV campaigns."}
+            </p>
+          </div>
+          {profile?.youtube_connected ? (
+            <span className="shrink-0 text-sm bg-teal/10 text-teal px-4 py-2 rounded-full font-medium">
+              Connected
+            </span>
+          ) : (
+            <button
+              onClick={handleConnectYouTube}
+              className="shrink-0 bg-ink text-white px-5 py-2.5 rounded-full font-medium hover:bg-inksoft transition"
+            >
+              Connect YouTube
+            </button>
+          )}
+        </div>
 
         {campaigns.length === 0 ? (
           <div className="bg-white border border-ink/10 rounded-2xl p-8">
