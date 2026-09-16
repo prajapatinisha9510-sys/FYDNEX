@@ -34,6 +34,9 @@ export default function CreatorDashboard() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [joiningId, setJoiningId] = useState<string | null>(null);
+  const [postUrls, setPostUrls] = useState<Record<string, string>>({});
+  const [submittedIds, setSubmittedIds] = useState<Set<string>>(new Set());
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -98,10 +101,17 @@ export default function CreatorDashboard() {
         // Which of these has this creator already joined?
         const { data: joined } = await supabase
           .from("campaign_creators")
-          .select("campaign_id")
+          .select("campaign_id, post_url")
           .eq("creator_id", user.id);
 
         setJoinedIds(new Set((joined || []).map((j) => j.campaign_id)));
+        setSubmittedIds(
+          new Set(
+            (joined || [])
+              .filter((j) => j.post_url)
+              .map((j) => j.campaign_id)
+          )
+        );
 
         setLoading(false);
       } catch (err: unknown) {
@@ -159,6 +169,29 @@ export default function CreatorDashboard() {
       scope: "instagram_business_basic,instagram_business_manage_insights",
     });
     window.location.href = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
+  }
+
+  async function handleSubmitLink(campaignId: string) {
+    const url = postUrls[campaignId];
+    if (!url) return;
+
+    setSubmittingId(campaignId);
+
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("campaign_creators")
+      .update({ post_url: url, status: "posted" })
+      .eq("campaign_id", campaignId)
+      .eq("creator_id", creatorId);
+
+    setSubmittingId(null);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setSubmittedIds((prev) => new Set(prev).add(campaignId));
   }
 
   async function handleLogout() {
@@ -265,34 +298,75 @@ export default function CreatorDashboard() {
           <div className="space-y-4">
             {campaigns.map((c) => {
               const joined = joinedIds.has(c.id);
+              const submitted = submittedIds.has(c.id);
               return (
                 <div
                   key={c.id}
-                  className="bg-white border border-ink/10 rounded-2xl p-6 flex items-center justify-between gap-6"
+                  className="bg-white border border-ink/10 rounded-2xl p-6"
                 >
-                  <div>
-                    <p className="font-display text-xl mb-1">{c.title}</p>
-                    <p className="text-muted text-sm mb-2">{c.brief}</p>
-                    <p className="text-xs text-muted">
-                      ${c.rate_per_view.toFixed(2)} per verified view &middot; $
-                      {c.budget_remaining.toLocaleString()} budget remaining
-                    </p>
+                  <div className="flex items-center justify-between gap-6">
+                    <div>
+                      <p className="font-display text-xl mb-1">{c.title}</p>
+                      <p className="text-muted text-sm mb-2">{c.brief}</p>
+                      <p className="text-xs text-muted">
+                        ${c.rate_per_view.toFixed(2)} per verified view
+                        &middot; ${c.budget_remaining.toLocaleString()}{" "}
+                        budget remaining
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleJoin(c.id)}
+                      disabled={joined || joiningId === c.id}
+                      className={`shrink-0 px-5 py-2.5 rounded-full font-medium transition ${
+                        joined
+                          ? "bg-teal/10 text-teal cursor-default"
+                          : "bg-amber text-ink hover:brightness-95 disabled:opacity-50"
+                      }`}
+                    >
+                      {joined
+                        ? "Joined"
+                        : joiningId === c.id
+                        ? "Joining..."
+                        : "Join campaign"}
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleJoin(c.id)}
-                    disabled={joined || joiningId === c.id}
-                    className={`shrink-0 px-5 py-2.5 rounded-full font-medium transition ${
-                      joined
-                        ? "bg-teal/10 text-teal cursor-default"
-                        : "bg-amber text-ink hover:brightness-95 disabled:opacity-50"
-                    }`}
-                  >
-                    {joined
-                      ? "Joined"
-                      : joiningId === c.id
-                      ? "Joining..."
-                      : "Join campaign"}
-                  </button>
+
+                  {joined && (
+                    <div className="mt-4 pt-4 border-t border-ink/10">
+                      {submitted ? (
+                        <p className="text-sm text-teal font-medium">
+                          Post link submitted — tracking will begin once
+                          view verification is live.
+                        </p>
+                      ) : (
+                        <div className="flex gap-3">
+                          <input
+                            type="url"
+                            placeholder="Paste your post link here"
+                            value={postUrls[c.id] || ""}
+                            onChange={(e) =>
+                              setPostUrls((prev) => ({
+                                ...prev,
+                                [c.id]: e.target.value,
+                              }))
+                            }
+                            className="flex-1 border border-ink/15 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber"
+                          />
+                          <button
+                            onClick={() => handleSubmitLink(c.id)}
+                            disabled={
+                              !postUrls[c.id] || submittingId === c.id
+                            }
+                            className="shrink-0 bg-ink text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-inksoft transition disabled:opacity-50"
+                          >
+                            {submittingId === c.id
+                              ? "Submitting..."
+                              : "Submit"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
